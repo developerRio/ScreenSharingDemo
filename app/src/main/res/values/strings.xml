@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ScreenSharingDemo</string>
+    <string name="take_screenshot">Take Screenshot</string>
+    <string name="dummy_text">Pixel Perfect</string>
+    <string name="share_my_image">Share my Image</string>
+    <string name="share_screenshot">Share screenshot Now</string>
+</resources>
