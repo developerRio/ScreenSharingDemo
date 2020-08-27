@@ -44,14 +44,7 @@ class MySharedPreferences {
     companion object {
         //user details keys
         const val API_KEY = "apiToken"
-        const val ID_KEY = "id"
-        const val NAME_KEY = "name"
-        const val EMAIL_KEY = "email"
-        const val MOBILE_KEY = "mobile"
-        const val DOB_KEY = "dob"
-        const val COUNTRY_CODE_KEY = "ccp"
-        const val PROFILE_IMAGE_LINK_KEY = "profile_img"
-        const val GENDER_KEY = "gender"
+
 
         //instance field
         private lateinit var mSharedPreference: SharedPreferences

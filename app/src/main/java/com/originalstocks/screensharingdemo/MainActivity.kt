@@ -11,6 +11,7 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.util.Log
 import android.view.PixelCopy
 import android.view.View
@@ -39,11 +40,7 @@ class MainActivity : AppCompatActivity() {
         mSharedPref = MySharedPreferences.getInstance(this)!!
 
         binding.takeScreenshotButton.setOnClickListener {
-            //captureAndShareImage()
-            openWhatsAppDeepLink(
-                "android.resource://data/user/0/com.originalstocks.screensharingdemo/files/ScreenSharingDemo/Images/aboutMe_screenshot_capture_26082020_1730.jpg",
-                "How're the mountains ?"
-            )
+            captureAndShareImage()
         }
 
 
@@ -60,7 +57,18 @@ class MainActivity : AppCompatActivity() {
                 val imageName = mSharedPref.getKey(IMAGE_URI_KEY, "") ?: ""
                 val absolutePath = mSharedPref.getKey(ABS_PATH_KEY, "") ?: ""
                 Log.i(TAG, "captureAndShareImage: imageName = $imageName")
-                fetchURIAndSharing(absolutePath, imageName)
+                /*for testing*/
+                /*val imageName = "aboutMe_screenshot_capture_27082020_1326.jpg"
+                val absolutePath = "data/user/0/com.originalstocks.screensharingdemo/files/ScreenSharingDemo/Images/"*/
+                val mBitmap = fetchBitmapFromPath(absolutePath, imageName)
+                val bitmapPath: String = MediaStore.Images.Media.insertImage(
+                    contentResolver,
+                    bitmap,
+                    "title",
+                    null
+                )
+                val bitmapUri = Uri.parse(bitmapPath)
+                shareOnWhatsApp(bitmapUri, "Here's a pixel perfect mountain")
 
             } else {
                 // nothing to share
@@ -123,7 +131,7 @@ class MainActivity : AppCompatActivity() {
         try {
             fos = FileOutputStream(myPath)
             // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos)
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos)
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
@@ -142,64 +150,63 @@ class MainActivity : AppCompatActivity() {
         return directory.absolutePath
     }
 
-    private fun fetchURIAndSharing(absolutePath: String, childName: String) {
+    private fun fetchBitmapFromPath(absolutePath: String, childName: String): Bitmap? {
         var bitmap: Bitmap? = null
         try {
             val file = File(absolutePath, childName)
             Log.i(TAG, "fetchURIFromStorage: file_path = $file")
-            //bitmap = BitmapFactory.decodeStream(FileInputStream(file))
+            bitmap = BitmapFactory.decodeStream(FileInputStream(file))
 
-            openWhatsAppDeepLink(file.toString(), "How's the Mountain View ?")
+            //openWhatsAppDeepLink(file.toString(), "How's the Mountain View ?")
 
         } catch (e: FileNotFoundException) {
             Log.e(TAG, "loadImageFromStorage: IOException ", e)
         }
+        return bitmap
     }
 
-    private fun openWhatsAppDeepLink(
-        imagePath: String,
+    private fun shareOnWhatsApp(
+        uriToShare: Uri,
         textToShare: String
     ) {
-        val whatsAppIntent = Intent(Intent.ACTION_SEND)
-        whatsAppIntent.type = "image/jpeg"
+        val sharingAppIntent = Intent(Intent.ACTION_SEND)
+        sharingAppIntent.type = "*/*"
+        sharingAppIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-        //val imageUri = Uri.parse("android.resource:/$imagePath")
-        val imageUri = Uri.parse(imagePath)
-        Log.i(TAG, "openWhatsAppDeepLink: imageURI = $imageUri")
-        whatsAppIntent.putExtra(Intent.EXTRA_STREAM, imageUri)
-        whatsAppIntent.putExtra(Intent.EXTRA_TEXT, textToShare)
+        Log.i(TAG, "shareOnWhatsApp: imageURI = $uriToShare")
+        sharingAppIntent.putExtra(Intent.EXTRA_STREAM, uriToShare)
+        sharingAppIntent.putExtra(Intent.EXTRA_TEXT, textToShare)
         var appFound = false
-        val matches2 = packageManager.queryIntentActivities(whatsAppIntent, 0)
+        val matches2 = packageManager.queryIntentActivities(sharingAppIntent, 0)
 
         for (info in matches2) {
             if (info.activityInfo.packageName.toLowerCase().startsWith(
                     "com.whatsapp"
                 )
             ) {
-                whatsAppIntent.setPackage(info.activityInfo.packageName)
+                sharingAppIntent.setPackage(info.activityInfo.packageName)
                 appFound = true
                 break
             }
         }
         if (appFound) {
-            startActivity(whatsAppIntent)
+            //startActivity(Intent.createChooser(intent, "Share"))
+            startActivity(sharingAppIntent)
+            binding.takeScreenshotButton.text = getString(R.string.take_screenshot)
         } else {
             // app not present
-            //
             val url = "https://wa.me/?text=$textToShare"
-            val implicitFacebookIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            implicitFacebookIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            implicitFacebookIntent.setPackage("com.android.chrome")
+            val implicitWebIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            implicitWebIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            implicitWebIntent.setPackage("com.android.chrome")
             try {
-                startActivity(implicitFacebookIntent)
+                startActivity(implicitWebIntent)
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                implicitFacebookIntent.setPackage(null)
-                startActivity(implicitFacebookIntent)
+                implicitWebIntent.setPackage(null)
+                startActivity(implicitWebIntent)
+                binding.takeScreenshotButton.text = getString(R.string.take_screenshot)
             }
-
-            /*exitDialog.setMessage("Seems like you don't have WhatsApp.")
-            exitDialog.show()*/
         }
     }
 
