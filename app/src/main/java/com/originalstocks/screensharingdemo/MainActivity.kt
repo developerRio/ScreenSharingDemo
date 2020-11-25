@@ -26,8 +26,8 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private val IMAGE_URI_KEY = "image_uri"
     private val ABS_PATH_KEY = "abs_path"
-    private lateinit var mSharedPref: MySharedPreferences
     private var path: String? = null
+    private lateinit var mSharedPref: MySharedPreferences
 
 
     private lateinit var binding: ActivityMainBinding
@@ -40,13 +40,13 @@ class MainActivity : AppCompatActivity() {
         mSharedPref = MySharedPreferences.getInstance(this)!!
 
         binding.takeScreenshotButton.setOnClickListener {
-            captureAndShareImage()
+            captureAndShareImage("Some random deep link")
         }
 
 
     }
 
-    private fun captureAndShareImage() {
+    private fun captureAndShareImage(linkToShare: String) {
         getBitmapFromView(binding.screenshotContentLayout, this) { bitmap ->
             path = saveToInternalStorage(bitmap, this)
             Log.i(TAG, "takeScreenshotButton: fetch this path $path")
@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                     null
                 )
                 val bitmapUri = Uri.parse(bitmapPath)
-                shareOnWhatsApp(bitmapUri, "Here's a pixel perfect mountain")
+                shareOnWhatsApp(bitmapUri, linkToShare)
 
             } else {
                 // nothing to share
@@ -176,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         Log.i(TAG, "shareOnWhatsApp: imageURI = $uriToShare")
         sharingAppIntent.putExtra(Intent.EXTRA_STREAM, uriToShare)
         sharingAppIntent.putExtra(Intent.EXTRA_TEXT, textToShare)
+
         var appFound = false
         val matches2 = packageManager.queryIntentActivities(sharingAppIntent, 0)
 

@@ -7,30 +7,20 @@
     tools:context=".MainActivity">
 
     <com.google.android.material.card.MaterialCardView
-        app:cardBackgroundColor="@color/colorPrimaryDark"
         android:id="@+id/screenshot_content_layout"
         android:layout_width="match_parent"
-        android:layout_margin="24dp"
+        android:layout_height="530dp"
+        android:drawingCacheQuality="high"
+        app:cardBackgroundColor="@color/colorPrimaryDark"
         app:cardCornerRadius="8dp"
-        app:cardElevation="8dp"
-        android:layout_above="@+id/take_screenshot_button"
-        android:layout_height="match_parent"
-        android:drawingCacheQuality="high">
+        app:cardElevation="8dp">
 
         <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/background_image_sharing_card"
             android:layout_width="match_parent"
-            android:src="@drawable/mountains"
+            android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:layout_height="match_parent"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#EBFFFFFF"
-            android:layout_gravity="center_vertical"
-            android:fontFamily="@font/open_sans_semibold"
-            android:text="@string/dummy_text"
-            android:textSize="74sp" />
+            android:src="@drawable/mountains" />
 
     </com.google.android.material.card.MaterialCardView>
 
